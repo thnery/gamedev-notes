@@ -1,4 +1,6 @@
-# The 5 game dev questions
+# Notes
+
+## The 5 game dev building blocks
 
 1. Input: How something is controlled?
 2. Detection: How something knows what's happening around it?
