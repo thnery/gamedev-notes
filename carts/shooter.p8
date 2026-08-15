@@ -2,13 +2,24 @@ pico-8 cartridge // http://www.pico-8.com
 version 43
 __lua__
 --main
+
+--called when
+--the game starts
 function _init()
+	--clears the screen
+	--0 is number for black
 	cls(0)
 	
+	--define the game mode
+	--start, the initial screen
 	mode="start"
 end
 
+--test user input and
+--events triggered during
+--the game
 function _update()
+	--handle game modes
 	if mode=="game" then
 		handle_game_updates()
 	elseif mode=="start" then
@@ -18,6 +29,8 @@ function _update()
 	end
 end
 
+--draws the state of the game
+--on the screen
 function _draw()
 	if mode=="game" then
 	 draw_basics()
@@ -31,107 +44,13 @@ function _draw()
 	end
 end
 -->8
---draw functions
-function draw_basics()
-	cls()
-	spr(shipspr,shipx,shipy)
-	spr(bulspr,bulx,buly)
-	spr(flamespr,shipx,shipy+6)
-end
-
-function draw_muzzle()
-	if muzzle>0 then	
-		circfill(shipx+3,shipy,muzzle,7)
-	end
-end
-
-function draw_hud()
-	print("score: "..score,52,1,12)
-
-	for n=1,4 do
-		if lives>=n then
-			spr(10,n*9-8,1)
-		else
-			spr(9,n*9-8,1)
-		end
-	end
-	
-	for n=1,rockets do
-		spr(11,120-(n*9),1)
-	end
-end
-
-function draw_starfield()
-	for n=1,#starx do
-		local star_color = 7
-		if starspd[n]<1.5 then
-			star_color=13
-		end
-		if starspd[n]<1.0 then
-			star_color=1
-		end
-		pset(starx[n],stary[n],star_color)
-	end
-end
-
-function draw_start_screen()
-	cls(1)
-	print("press space to start")
-end
-
-function draw_game_over()
-	cls(1)
-	print("game over...", 34, 40, 12)
-end
--->8
---animations
-function animate()
-	--animate flame
-	flamespr+=1
-	if flamespr>6 then
-		flamespr=4
-	end
-	
-	--animate bullet
-	bulspr+=1
-	if bulspr>8 then
-		bulspr=7
-	end
-	
-	--animate muzzle flash
-	if muzzle>0 then
-		muzzle-=1
-	end
-end
-
-function animate_starfield()
-	for n=1,#stary do
-		local sy=stary[n]
-		sy=sy+starspd[n]
-		if sy>128 then
-			sy=sy-128
-		end
-		stary[n]=sy
-	end
-end
-function animate_stars(dir)
-	for n=1,maxstars do
-		if(dir=="left" and shipx>0) then
-			starx[n]+=1
-		end
-		if(dir=="right" and shipx<120) then
-			starx[n]-=1
-		end
-		if(dir=="up") then
-			stary[n]+=1
-		end
-		if(dir=="down") then
-			stary[n]-=1
-		end
-	end
-end
--->8
 --init
+
+--[[
+this code loads when the game starts
+it is used to setup variables and
+initial features
+]]
 function start_game()
 	shipspr=2
 	shipsprl=1
@@ -169,7 +88,7 @@ function start_game()
 	mode="game"
 end
 -->8
---update functions
+--update
 function handle_game_updates()
 	shipsx=0
 	shipsy=0
@@ -245,6 +164,142 @@ end
 function handle_game_over()
 	if btnp(5) then
 		mode="start"
+	end
+end
+-->8
+--draw
+
+--[[
+clears screen
+draw the ship, bullet and
+ship flame
+]]
+function draw_basics()
+	cls()
+	spr(shipspr,shipx,shipy)
+	spr(bulspr,bulx,buly)
+	spr(flamespr,shipx,shipy+6)
+end
+
+--[[
+draws a muzzle when
+ship shoots
+]]
+function draw_muzzle()
+	if muzzle>0 then	
+		circfill(shipx+3,shipy,muzzle,7)
+	end
+end
+
+--draw game hud: score, lives and bombs
+function draw_hud()
+	print("score: "..score,52,1,12)
+
+	for n=1,4 do
+		if lives>=n then
+			spr(10,n*9-8,1)
+		else
+			spr(9,n*9-8,1)
+		end
+	end
+	
+	for n=1,rockets do
+		spr(11,120-(n*9),1)
+	end
+end
+
+--[[
+draw the starfield scenario
+randomly draws a pixel (star)
+starx and stary have the same
+size, they are used to position
+the stars on the starfield
+]]
+function draw_starfield()
+	for n=1,#starx do
+		local star_color = 7
+		
+		--[[
+		the logic bellow handles the star
+		color based on their velocity.
+		the velocity is defined by starspd
+		which is a table with the same data
+		of starx and stary
+		]]
+		if starspd[n]<1.5 then
+			star_color=13
+		end
+		if starspd[n]<1.0 then
+			star_color=1
+		end
+		pset(starx[n],stary[n],star_color)
+	end
+end
+
+--self explanatory
+function draw_start_screen()
+	cls(1)
+	print("press space to start")
+end
+
+--self explanatory
+function draw_game_over()
+	cls(1)
+	print("game over...", 34, 40, 12)
+end
+-->8
+--animations
+
+--all animatinos are defined here
+function animate()
+	--animate flame
+	flamespr+=1
+	if flamespr>6 then
+		flamespr=4
+	end
+	
+	--animate bullet
+	bulspr+=1
+	if bulspr>8 then
+		bulspr=7
+	end
+	
+	--animate muzzle flash
+	if muzzle>0 then
+		muzzle-=1
+	end
+end
+
+function animate_starfield()
+	for n=1,#stary do
+		local sy=stary[n]
+		sy=sy+starspd[n]
+		if sy>128 then
+			sy=sy-128
+		end
+		stary[n]=sy
+	end
+end
+
+--[[
+animates the starfield
+when the ship moves right,left and up
+the stars move to the opposite direction
+]]
+function animate_stars(dir)
+	for n=1,maxstars do
+		if(dir=="left" and shipx>0) then
+			starx[n]+=1
+		end
+		if(dir=="right" and shipx<120) then
+			starx[n]-=1
+		end
+		if(dir=="up") then
+			stary[n]+=1
+		end
+		if(dir=="down") then
+			stary[n]-=1
+		end
 	end
 end
 __gfx__
