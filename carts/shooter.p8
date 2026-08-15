@@ -52,6 +52,8 @@ it is used to setup variables and
 initial features
 ]]
 function start_game()
+	mode="game"
+	
 	shipspr=2
 	shipsprl=1
 	shipsprr=3
@@ -74,18 +76,19 @@ function start_game()
 	lives=4
 	rockets=2
 	
-	starx={}
-	stary={}
+	stars={}
 	starspd={}
 	maxstars=50
 	
 	for n=1,maxstars do
-		add(starx,flr(rnd(127)))
-		add(stary,flr(rnd(127)))
-		add(starspd,rnd(1.5)+0.5)
+		local star={}
+		star.x=flr(rnd(128))
+		star.y=flr(rnd(128))
+		star.spd=rnd(1.5)+0.5
+		add(stars,star)
 	end
 	
-	mode="game"
+	bullets={}
 end
 -->8
 --update
@@ -106,9 +109,6 @@ function handle_movements()
 	--move the ship	
 	shipx+=shipsx
 	shipy+=shipsy
-	
-	--move bullet
-	buly-=4
 end
 
 function handle_edges()
@@ -143,11 +143,18 @@ function handle_controls()
 		shipsy=2
 		animate_stars("down")
 	end
-	if btn(5) then
-		bulx=shipx
-		buly=shipy-3
-		muzzle=3
+	if btnp(5) then
+		local bullet={
+			x=shipx,
+			y=shipy-3
+		}
+
+		add(bullets,bullet)
+		
+		--bullet soundeffect
 		sfx(0)
+		
+		muzzle=3
 	end
 	
 	if btnp(4) then
@@ -177,8 +184,12 @@ ship flame
 function draw_basics()
 	cls()
 	spr(shipspr,shipx,shipy)
-	spr(bulspr,bulx,buly)
 	spr(flamespr,shipx,shipy+6)
+	
+	for n=1,#bullets do
+		local bullet=bullets[n]
+		spr(bulspr,bullet.x,bullet.y)
+	end
 end
 
 --[[
@@ -216,8 +227,9 @@ size, they are used to position
 the stars on the starfield
 ]]
 function draw_starfield()
-	for n=1,#starx do
+	for n=1,maxstars do
 		local star_color = 7
+		local star=stars[n]
 		
 		--[[
 		the logic bellow handles the star
@@ -226,13 +238,13 @@ function draw_starfield()
 		which is a table with the same data
 		of starx and stary
 		]]
-		if starspd[n]<1.5 then
+		if star.spd<1.5 then
 			star_color=13
 		end
-		if starspd[n]<1.0 then
+		if star.spd<1.0 then
 			star_color=1
 		end
-		pset(starx[n],stary[n],star_color)
+		pset(star.x,star.y,star_color)
 	end
 end
 
@@ -258,10 +270,19 @@ function animate()
 		flamespr=4
 	end
 	
-	--animate bullet
-	bulspr+=1
-	if bulspr>8 then
-		bulspr=7
+	--animate bullets
+	for n=#bullets,1,-1 do
+	local bullet=bullets[n]
+		bulspr+=1
+		if bulspr>8 then
+			bulspr=7
+		end
+		
+		bullet.y-=4
+		
+		if bullet.y<-8 then
+			del(bullets,bull)
+		end
 	end
 	
 	--animate muzzle flash
@@ -271,13 +292,13 @@ function animate()
 end
 
 function animate_starfield()
-	for n=1,#stary do
-		local sy=stary[n]
-		sy=sy+starspd[n]
+	for n=1,#stars do
+		local sy=stars[n].y
+		sy=sy+stars[n].spd
 		if sy>128 then
 			sy=sy-128
 		end
-		stary[n]=sy
+		stars[n].y=sy
 	end
 end
 
@@ -288,17 +309,18 @@ the stars move to the opposite direction
 ]]
 function animate_stars(dir)
 	for n=1,maxstars do
+		local star=stars[n]
 		if(dir=="left" and shipx>0) then
-			starx[n]+=1
+			star.x+=1
 		end
 		if(dir=="right" and shipx<120) then
-			starx[n]-=1
+			star.x-=1
 		end
 		if(dir=="up") then
-			stary[n]+=1
+			star.y+=1
 		end
 		if(dir=="down") then
-			stary[n]-=1
+			star.y-=1
 		end
 	end
 end
