@@ -3,8 +3,7 @@ version 43
 __lua__
 --main
 
---called when
---the game starts
+--called when the game starts
 function _init()
 	--clears the screen
 	--0 is number for black
@@ -69,6 +68,7 @@ function start_game()
 	bulspr=7
 	bulx=0
 	buly=0
+	maxbullets=5
 	
 	muzzle=0
 	
@@ -148,15 +148,16 @@ function handle_controls()
 			x=shipx,
 			y=shipy-3
 		}
-
-		add(bullets,bullet)
 		
-		--bullet soundeffect
-		sfx(0)
+		if (#bullets<3) then
+			add(bullets,bullet)
 		
-		muzzle=3
+			--bullet soundeffect
+			sfx(0)
+			
+			muzzle=3
+		end
 	end
-	
 	if btnp(4) then
 		mode="over"
 	end
@@ -281,7 +282,7 @@ function animate()
 		bullet.y-=4
 		
 		if bullet.y<-8 then
-			del(bullets,bull)
+			del(bullets,bullet)
 		end
 	end
 	
